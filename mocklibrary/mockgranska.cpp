@@ -6,12 +6,29 @@
  */
 
 #include "mockgranska.h"
+#include <iostream>
+#include <sstream>
 
 mock_granska::mock_granska() {
-	// TODO Auto-generated constructor stub
-
+	control=0;
 }
 
 mock_granska::~mock_granska() {
-	// TODO Auto-generated destructor stub
+	control=-1;
 }
+
+string mock_granska::run(const char* input) {
+	control++;
+
+	std::stringstream ssm;
+
+	ssm << "<xml>" << endl
+			<< "\t<text>"
+			<< input
+			<< "</text>\n"
+			<< "\t<control value=" << control << "/>\n"
+			<< "</xml>" << endl;
+
+	return ssm.str();
+}
+
