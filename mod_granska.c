@@ -55,6 +55,8 @@
 #include "apr_strings.h"
 #include "ap_config.h"
 
+#include "granska_api.h"
+
 /* Define structures in this module */
 typedef struct {
 	const char* key;
@@ -111,8 +113,13 @@ static int granska_handler(request_rec *r)
 	if (!r->handler || strcmp(r->handler, "granska-handler")) return (DECLINED);
 
 	if(granska_library_initialized == 0 ){
-		ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
+		ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,
 				"initializing library" );
+		if( loadGranska() != GRANSKA_SUCCESS ){
+			ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r,
+					"library not initialized" );
+			return HTTP_INTERNAL_SERVER_ERROR;
+		}
 		granska_library_initialized = 1;
 	}
 
@@ -139,9 +146,7 @@ static int granska_handler(request_rec *r)
 
 			keyValuePair* formData = readPost(r);
 			if (formData) {
-				int i;
-
-				for (i = 0; &formData[i]; i++) {
+				for (int i = 0; &formData[i]; i++) {
 
 					if (formData[i].key && formData[i].value) {
 						ap_rprintf(r, "%s = %s\n", formData[i].key, formData[i].value);
@@ -170,7 +175,7 @@ static int granska_handler(request_rec *r)
 			ap_rputs("<body>", r);
 			ap_rputs("Alive and kicking", r);
 			ap_rputs("</body>", r);
-			ap_rputs("</html>", r);
+			ap_rputs("</html>\n", r);
 			ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,"pinged");
 			return OK;
 		}
@@ -183,7 +188,7 @@ static int granska_handler(request_rec *r)
 			ap_rputs("<body>", r);
 			ap_rprintf(r,"Child processed %lu requests", num_requests_processed );
 			ap_rputs("</body>", r);
-			ap_rputs("</html>", r);
+			ap_rputs("</html>\n", r);
 			ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,"stats reported");
 			return OK;
 		}

@@ -13,8 +13,9 @@ APACHECTL=apachectl
 
 #   additional defines, includes and libraries
 #DEFS=-Dmy_define=my_value
-#INCLUDES=-I/include/dir
-#LIBS=-Lmy/lib/dir -lmylib
+#INCLUDES=-I/usr/local/include
+#LIBS=
+SH_LIBS= -lmockgranska
 
 #   the default target
 all: local-shared-build
@@ -28,7 +29,7 @@ clean:
 
 #   simple test
 test: reload
-	lynx -mime_header http://localhost/granska
+	lynx -mime_header http://localhost/ping.granska
 
 #   install and activate shared object by reloading Apache to
 #   force a reload of the shared object file
