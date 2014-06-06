@@ -13,7 +13,7 @@ APACHECTL=apachectl
 
 #   additional defines, includes and libraries
 #DEFS=-Dmy_define=my_value
-#INCLUDES=-Imy/include/dir
+#INCLUDES=-I/include/dir
 #LIBS=-Lmy/lib/dir -lmylib
 
 #   the default target
@@ -43,7 +43,3 @@ restart:
 stop:
 	$(APACHECTL) stop
 
-#### below is only for development
-mocklibrary: 
-	g++ -fPIC -c mockgranska.cpp -o mockgranska.o 
-	g++ -shared -o libmockgranska.so mockgranska.o
