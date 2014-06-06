@@ -37,37 +37,187 @@
 **    The sample page from mod_granska.c
 */ 
 
+/*
+ * mod_granska.c
+ *
+ *  Created on: Jun 6, 2014
+ *      Author: fmarchal
+ */
+
 #include "httpd.h"
 #include "http_config.h"
+#include "http_core.h"
+#include "http_log.h"
+
 #include "http_protocol.h"
+#include "http_request.h"
+
+#include "apr_strings.h"
 #include "ap_config.h"
 
-/* The sample content handler */
+/* Define structures in this module */
+typedef struct {
+	const char* key;
+	const char* value;
+} keyValuePair;
+
+/* Define prototypes of our functions in this module */
+static void granska_register_hooks(apr_pool_t *pool);
+static int granska_handler(request_rec *r);
+keyValuePair* readPost(request_rec* r);
+
+
+static int granska_library_initialized = 0;
+static long num_requests_processed = 0;
+
+#if AP_SERVER_MINORVERSION_NUMBER>2
+AP_DECLARE_MODULE(granska);
+#endif
+
+/* Define our module as an entity and assign a function for registering hooks  */
+module AP_MODULE_DECLARE_DATA   granska_module =
+{
+		STANDARD20_MODULE_STUFF,
+		NULL,            // Per-directory configuration handler
+		NULL,            // Merge handler for per-directory configurations
+		NULL,            // Per-server configuration handler
+		NULL,            // Merge handler for per-server configurations
+		NULL,            // Any directives we may have for httpd
+		granska_register_hooks   // Our hook registering function
+};
+
+
+/* register_hooks: Adds a hook to the httpd process */
+static void granska_register_hooks(apr_pool_t *pool)
+{
+	ap_log_perror(APLOG_MARK, APLOG_WARNING, APR_SUCCESS, pool, "registering module");
+	/* Hook the request handler */
+	ap_hook_handler(granska_handler, NULL, NULL, APR_HOOK_LAST);
+}
+
+
+
+
+/* The handler function for our module.
+ * This is where all the fun happens!
+ */
+
 static int granska_handler(request_rec *r)
 {
-    if (strcmp(r->handler, "granska")) {
-        return DECLINED;
-    }
-    r->content_type = "text/html";      
+	/* First off, we need to check if this is a call for the "example" handler.
+	 * If it is, we accept it and do our things, it not, we simply return DECLINED,
+	 * and Apache will try somewhere else.
+	 */
+	if (!r->handler || strcmp(r->handler, "granska-handler")) return (DECLINED);
 
-    if (!r->header_only)
-        ap_rputs("The sample page from mod_granska.c\n", r);
-    return OK;
+	if(granska_library_initialized == 0 ){
+		ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
+				"initializing library" );
+		granska_library_initialized = 1;
+	}
+
+	char* uri;
+	// Figure out which file is being requested by removing the .granska from it
+	uri = apr_pstrdup(r->pool, r->unparsed_uri);
+	uri[strlen(uri)-strlen(".granska")] = 0; // Cut off the extension
+
+	if( strcmp(uri,"/run") == 0 ){
+		if( r->method_number==M_POST){
+
+			const char* contentType = apr_table_get(r->headers_in, "Content-Type");
+			ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,"content-type: %s", contentType);
+
+			if(strcasecmp("application/x-www-form-urlencoded; charset=ISO-8859-1", contentType)){
+				ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,"content-type not allowed %s", contentType);
+				return HTTP_BAD_REQUEST;
+			}
+
+
+			ap_rputs("<html>", r);
+			ap_rputs("<body>", r);
+			ap_rprintf(r,"Granska results:%s", "N/A" );
+
+			keyValuePair* formData = readPost(r);
+			if (formData) {
+				int i;
+
+				for (i = 0; &formData[i]; i++) {
+
+					if (formData[i].key && formData[i].value) {
+						ap_rprintf(r, "%s = %s\n", formData[i].key, formData[i].value);
+					} else if (formData[i].key) {
+						ap_rprintf(r, "%s\n", formData[i].key);
+					} else if (formData[i].value) {
+						ap_rprintf(r, "= %s\n", formData[i].value);
+					} else {
+						break;
+					}
+				}
+			}
+			else
+				ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,"empty form data");
+
+			ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,"scrutinized");
+			num_requests_processed++;
+			return OK;
+		}
+		return HTTP_METHOD_NOT_ALLOWED;
+
+	}
+	else if( strcmp(uri,"/ping") == 0 ){
+		if( r->method_number==M_GET){
+			ap_rputs("<html>", r);
+			ap_rputs("<body>", r);
+			ap_rputs("Alive and kicking", r);
+			ap_rputs("</body>", r);
+			ap_rputs("</html>", r);
+			ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,"pinged");
+			return OK;
+		}
+		else
+			return HTTP_METHOD_NOT_ALLOWED;
+	}
+	else if( strcmp(uri,"/stats") == 0 ){
+		if( r->method_number==M_GET){
+			ap_rputs("<html>", r);
+			ap_rputs("<body>", r);
+			ap_rprintf(r,"Child processed %lu requests", num_requests_processed );
+			ap_rputs("</body>", r);
+			ap_rputs("</html>", r);
+			ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,"stats reported");
+			return OK;
+		}
+		else
+			return HTTP_METHOD_NOT_ALLOWED;
+	}
+
+	return HTTP_NOT_FOUND;
 }
 
-static void granska_register_hooks(apr_pool_t *p)
-{
-    ap_hook_handler(granska_handler, NULL, NULL, APR_HOOK_MIDDLE);
-}
 
-/* Dispatch list for API hooks */
-module AP_MODULE_DECLARE_DATA granska_module = {
-    STANDARD20_MODULE_STUFF, 
-    NULL,                  /* create per-dir    config structures */
-    NULL,                  /* merge  per-dir    config structures */
-    NULL,                  /* create per-server config structures */
-    NULL,                  /* merge  per-server config structures */
-    NULL,                  /* table of config file commands       */
-    granska_register_hooks  /* register hooks                      */
-};
+keyValuePair* readPost(request_rec* r) {
+	apr_array_header_t *pairs = NULL;
+	apr_off_t len;
+	apr_size_t size;
+	int res;
+	int i = 0;
+	char *buffer;
+	keyValuePair* kvp;
+
+	res = ap_parse_form_data(r, NULL, &pairs, -1, HUGE_STRING_LEN);
+	if (res != OK || !pairs) return NULL; /* Return NULL if we failed or if there is no POST data */
+	kvp = apr_pcalloc(r->pool, sizeof(keyValuePair) * (pairs->nelts + 1));
+	while (pairs && !apr_is_empty_array(pairs)) {
+		ap_form_pair_t *pair = (ap_form_pair_t *) apr_array_pop(pairs);
+		apr_brigade_length(pair->value, 1, &len);
+		size = (apr_size_t) len;
+		buffer = apr_palloc(r->pool, size + 1);
+		apr_brigade_flatten(pair->value, buffer, &size);
+		buffer[len] = 0;
+		kvp[i].key = apr_pstrdup(r->pool, pair->name);
+		kvp[i].value = buffer;
+		i++;
+	}
+	return kvp;
+}
 

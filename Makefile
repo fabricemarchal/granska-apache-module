@@ -43,3 +43,7 @@ restart:
 stop:
 	$(APACHECTL) stop
 
+#### below is only for development
+mocklibrary: 
+	g++ -fPIC -c mockgranska.cpp -o mockgranska.o 
+	g++ -shared -o libmockgranska.so mockgranska.o
