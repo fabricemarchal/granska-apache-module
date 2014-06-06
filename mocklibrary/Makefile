@@ -8,3 +8,6 @@ mocklibrary:
 	
 test:	mocklibrary
 	g++ testmock.cpp  -lmockgranska -o testmock
+	
+clean:
+	rm -f testmock *.o *.so
