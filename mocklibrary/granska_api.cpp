@@ -26,7 +26,7 @@ static mock_granska* global_granska = NULL;
 	return GRANSKA_SUCCESS;
 }
 
-const char* runGranska(const char* input){
+const char* granska(const char* input){
 	return global_granska->run( input ).c_str();
 }
 

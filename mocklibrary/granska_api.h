@@ -17,7 +17,7 @@ extern "C" {
 
 int loadGranska();
 
-const char* runGranska(const char*);
+const char* granska(const char*);
 
 
 #ifdef __cplusplus /* If this is a C++ compiler, end C linkage */

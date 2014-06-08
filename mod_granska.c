@@ -55,7 +55,9 @@
 #include "apr_strings.h"
 #include "ap_config.h"
 
+#ifdef MOCK_LIBRARY
 #include "granska_api.h"
+#endif
 
 /* Define structures in this module */
 typedef struct {
@@ -113,13 +115,24 @@ static int granska_handler(request_rec *r)
 	if (!r->handler || strcmp(r->handler, "granska-handler")) return (DECLINED);
 
 	if(granska_library_initialized == 0 ){
-		ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,
-				"initializing library" );
+		ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,"initializing library" );
+		ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,"GRANSKA_HOME = %s", getenv("GRANSKA_HOME") );
+		ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,"STAVA_LEXICON = %s", getenv("STAVA_LEXICON") );
+		ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,"TAGGER_LEXICON = %s", getenv("TAGGER_LEXICON") );
+		ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,"SCRUTINIZER_RULE_FILE = %s", getenv("SCRUTINIZER_RULE_FILE") );
+		ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,"SCRUTINIZER_TEST_TEXT = %s", getenv("SCRUTINIZER_TEST_TEXT") );
+		ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,"DEVELOPERS_TAGGER_LEXICON = %s", getenv("DEVELOPERS_TAGGER_LEXICON") );
+		ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,"DEVELOPERS_TAGGER_OPT_TEXT = %s", getenv("DEVELOPERS_TAGGER_OPT_TEXT") );
+
+#ifdef MOCK_LIBRARY
 		if( loadGranska() != GRANSKA_SUCCESS ){
 			ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r,
 					"library not initialized" );
 			return HTTP_INTERNAL_SERVER_ERROR;
 		}
+#else
+		loadGranska();
+#endif
 		granska_library_initialized = 1;
 	}
 
@@ -162,7 +175,8 @@ static int granska_handler(request_rec *r)
 			return HTTP_BAD_REQUEST;
 		}
 
-		const char* granska_output = runGranska( granska_input );
+		ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "scrutinizing, text length=%d",strlen(granska_input));
+		const char* granska_output = granska( granska_input );
 		ap_rprintf(r,"%s", granska_output);
 		ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,"scrutinized");
 		num_requests_processed++;
