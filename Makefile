@@ -15,7 +15,8 @@ APACHECTL=apachectl
 #DEFS=-Dmy_define=my_value
 #INCLUDES=-I/usr/local/include
 #LIBS=
-SH_LIBS= -lmockgranska
+#SH_LIBS= -lmockgranska
+SH_LIBS= -lgranska
 
 #   the default target
 all: local-shared-build

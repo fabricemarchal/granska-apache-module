@@ -57,6 +57,8 @@
 
 #ifdef MOCK_LIBRARY
 #include "granska_api.h"
+#else
+#include "granskaapi.h"
 #endif
 
 /* Define structures in this module */
