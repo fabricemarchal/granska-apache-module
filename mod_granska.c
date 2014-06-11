@@ -155,7 +155,7 @@ static int granska_handler(request_rec *r)
 			return HTTP_BAD_REQUEST;
 		}
 
-		const char* granska_input = NULL;
+		char* granska_input = NULL;
 		keyValuePair* formData = readPost(r);
 		if (formData) {
 			for (int i = 0; &formData[i]; i++) {
@@ -180,6 +180,7 @@ static int granska_handler(request_rec *r)
 		ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "scrutinizing, text length=%d",strlen(granska_input));
 		const char* granska_output = granska( granska_input );
 		ap_rprintf(r,"%s", granska_output);
+		free((void*)granska_output);
 		ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,"scrutinized");
 		num_requests_processed++;
 		return OK;
