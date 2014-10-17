@@ -1,0 +1,7 @@
+export GRANSKA_HOME=/opt/granska
+export TAGGER_LEXICON=$GRANSKA_HOME/lex
+export DEVELOPERS_TAGGER_LEXICON=$GRANSKA_HOME/lex
+export STAVA_LEXICON=$GRANSKA_HOME/stava/lib/
+export SCRUTINIZER_RULE_FILE=$GRANSKA_HOME/rulesets/wille/regelsamling.ver8
+export SCRUTINIZER_TEST_TEXT=$GRANSKA_HOME/rulesets/wille/regelsamling.ver8.testfil
+export DEVELOPERS_TAGGER_OPT_TEXT=$GRANSKA_HOME/rulesets/wille/regelsamling.ver8.testfil
