@@ -1,0 +1,3 @@
+cp configs/granska.conf /etc/httpd/conf.d/granska.conf
+cat configs/httpd-variables >> /etc/sysconfig/httpd
+edit /etc/httpd/conf/httpd.conf manually see configs/httpd.conf
