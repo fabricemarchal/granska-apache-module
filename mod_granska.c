@@ -150,7 +150,7 @@ static int granska_handler(request_rec *r)
 		const char* contentType = apr_table_get(r->headers_in, "Content-Type");
 		ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,"content-type: %s", contentType);
 
-		if(strcasecmp("application/x-www-form-urlencoded; charset=ISO-8859-1", contentType)){
+		if(strcasecmp("application/x-www-form-urlencoded;charset=ISO-8859-1", contentType)){
 			ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,"content-type not allowed %s", contentType);
 			return HTTP_BAD_REQUEST;
 		}
