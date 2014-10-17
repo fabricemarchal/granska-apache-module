@@ -227,6 +227,8 @@ keyValuePair* readPost(request_rec* r) {
 
 	res = ap_parse_form_data(r, NULL, &pairs, -1, HUGE_STRING_LEN);
 	if (res != OK || !pairs) return NULL; /* Return NULL if we failed or if there is no POST data */
+	if( pairs->nelts == 0 ) return NULL; /* No POST data */
+
 	kvp = apr_pcalloc(r->pool, sizeof(keyValuePair) * (pairs->nelts + 1));
 	while (pairs && !apr_is_empty_array(pairs)) {
 		ap_form_pair_t *pair = (ap_form_pair_t *) apr_array_pop(pairs);
