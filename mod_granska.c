@@ -100,13 +100,13 @@ static void granska_register_hooks(apr_pool_t *pool)
 	/* Hook the request handler */
 	ap_hook_handler(granska_handler, NULL, NULL, APR_HOOK_LAST);
 	
-	setenv("GRANSKA_HOME", ap_resolve_env("${GRANSKA_HOME}"), 1 );
-	setenv("STAVA_LEXICON", ap_resolve_env("${STAVA_LEXICON}"), 1 );
-	setenv("TAGGER_LEXICON", ap_resolve_env("${TAGGER_LEXICON}"), 1 );
-	setenv("SCRUTINIZER_RULE_FILE", ap_resolve_env("${SCRUTINIZER_RULE_FILE}"), 1 );
-	setenv("SCRUTINIZER_TEST_TEXT", ap_resolve_env("${SCRUTINIZER_TEST_TEXT}"), 1 );
-	setenv("DEVELOPERS_TAGGER_LEXICON", ap_resolve_env("${DEVELOPERS_TAGGER_LEXICON}"), 1 );
-	setenv("DEVELOPERS_TAGGER_OPT_TEXT", ap_resolve_env("${DEVELOPERS_TAGGER_OPT_TEXT}"), 1 );	
+	setenv("GRANSKA_HOME", ap_resolve_env(pool,"${GRANSKA_HOME}"), 1 );
+	setenv("STAVA_LEXICON", ap_resolve_env(pool,"${STAVA_LEXICON}"), 1 );
+	setenv("TAGGER_LEXICON", ap_resolve_env(pool,"${TAGGER_LEXICON}"), 1 );
+	setenv("SCRUTINIZER_RULE_FILE", ap_resolve_env(pool,"${SCRUTINIZER_RULE_FILE}"), 1 );
+	setenv("SCRUTINIZER_TEST_TEXT", ap_resolve_env(pool,"${SCRUTINIZER_TEST_TEXT}"), 1 );
+	setenv("DEVELOPERS_TAGGER_LEXICON", ap_resolve_env(pool,"${DEVELOPERS_TAGGER_LEXICON}"), 1 );
+	setenv("DEVELOPERS_TAGGER_OPT_TEXT", ap_resolve_env(pool,"${DEVELOPERS_TAGGER_OPT_TEXT}"), 1 );	
 		
 }
 
