@@ -23,6 +23,7 @@ all: local-shared-build
 
 #   install the shared object file into Apache 
 install: install-modules-yes
+	install granska.conf /etc/httpd/conf.d/
 
 #   cleanup
 clean:
